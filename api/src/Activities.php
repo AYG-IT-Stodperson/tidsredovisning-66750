@@ -93,7 +93,6 @@ function hamtaEnskildAktivitet(string $id): Response {
 
         return new Response($retur, 400);
     }
-
     // returnera svar
 }
 
@@ -103,6 +102,28 @@ function hamtaEnskildAktivitet(string $id): Response {
  * @return Response
  */
 function sparaNyAktivitet(string $aktivitet): Response {
+    // sanera indata
+    $saneradAktivitet=htmlentities($aktivitet);
+
+    //koppla mot databas
+    $db=connectDb();
+
+    //skicka fråga 
+    $stmt=$db->prepare("INSERT INTO aktiviteter (aktivitet) VALUES (:aktivitet)");
+    $svar=$stmt->execute(['aktivitet'=>$saneradAktivitet]);
+
+    //kontrollera resultat och returnera svar
+    if($svar===true) {
+        $retur=new stdClass();
+        $retur->id=$db->lastInsertId();
+        $retur->meddelande=['Spara lyckades', '1 post lades till'];
+        return new Response($retur);
+    } else {
+        $retur=new stdClass();
+        $retur->error=['Bad rquest', "något gick fel vid spara", $stmt->errorInfo()];
+        return new Response($retur, 400);
+    }
+
 }
 
 /**
@@ -112,8 +133,41 @@ function sparaNyAktivitet(string $aktivitet): Response {
  * @return Response
  */
 function uppdateraAktivitet(string $id, string $aktivitet): Response {
-}
+    // konstrollera indata
+    $kontrolleratID=filter_var($id, FILTER_VALIDATE_INT);
+    $saneradAktivitet=htmlentities($aktivitet);
 
+    if($kontrolleratID===false) {
+        $retur=new stdClass();
+        $retur->error=['Bad request', "ogiltigti id"];
+        return new response($retur, 400);
+    }
+
+    // koppla databas
+    $db=connectDb();
+
+    // skicka uppdatering
+    $stmt=$db->prepare("UPDATE aktiviteter SET aktivitet=:aktivitet WHERE id=:id");
+    $stmt->execute(['aktivitet'=>$saneradAktivitet, 'id'=>$kontrolleratID]);
+
+    // kontrollera resultat och skicka svar
+    if($stmt->rowCount()===1) {
+        $retur=new StdClass();
+        $retur->result=true;
+        $retur->meddelande=['Uppdatera lyckades', "1 rad uppdaterades"];
+        return new Response($retur);
+    } elseif ($stmt->rowCount()===0){
+        $retur=new stdClass();
+        $retur->result=false;
+        $retur->meddelande=['Uppdatera misslyckades', "inga rader uppdaterades"];
+        return new Response($retur);
+    } else {
+        $retur=new StdClass();
+        $retur->result=true;
+        $retur->meddelande=["Hoppsan","uppdatering lyckades", $stmt->rowCount() ."rader uppdaterades!"];
+        return new Response($retur);
+}
+}
 /**
  * Raderar en aktivitet med angivet id
  * @param string $id Id för posten som ska raderas
