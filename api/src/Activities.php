@@ -10,7 +10,6 @@ require_once __DIR__ . '/funktioner.php';
  * @return Response
  */
 function activities(Route $route, array $postData): Response {
-    return new Response("Aktiviteter");
     try {
         if (count($route->getParams()) === 0 && $route->getMethod() === RequestMethod::GET) {
             return hamtaAllaAktiviteter();
@@ -40,6 +39,23 @@ function activities(Route $route, array $postData): Response {
  * @return Response
  */
 function hamtaAllaAktiviteter(): Response {
+    //koppla mot databas
+    $db=connectdb();
+
+    //hämta alla aktiviteter
+    $result=$db->query("SELECT id, aktivitet FROM aktiviteter");
+
+    //skapa retur
+    $retur=[];
+    foreach ($result as $post) {
+        $rad=new stdClass();
+        $rad->id=$post['id'];
+        $rad->activity=$post['aktivitet'];
+        $retur[]=$rad;
+    }
+
+    //returnera svar
+    return new Response(["aktivities"=>$retur]);
 }
 
 /**
@@ -48,6 +64,37 @@ function hamtaAllaAktiviteter(): Response {
  * @return Response
  */
 function hamtaEnskildAktivitet(string $id): Response {
+    // kontrollera indata
+    $aktivitetsId=filter_var($id, FILTER_VALIDATE_INT);
+
+    if($aktivitetsId===false) {
+        $retur=new stdClass();
+        $retur->error=["Bad request", "ogiltigt id"];
+        return new Response ($retur, 400);
+    }
+    
+    // koppla mot databas
+    $db=connectDb();
+
+    // skicka fråga 
+    $stmt=$db->prepare( "SELECT id, aktivitet FROM aktiviteter where id=:id");
+    $stmt->execute(['id'=>$aktivitetsId]);
+
+    // hantera svar
+    if($row=$stmt->fetch()) {
+        $retur=new stdClass();
+        $retur->id=$row['id'];
+        $retur->activity=$row['aktivitet'];
+
+        return new Response($retur);
+    } else {
+        $retur=new stdClass();
+        $retur->error=['Bad request', "angivet id ($aktivitetsId) finns inte i databasen"];
+
+        return new Response($retur, 400);
+    }
+
+    // returnera svar
 }
 
 /**
