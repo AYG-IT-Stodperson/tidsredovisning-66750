@@ -109,9 +109,14 @@ function sparaNyAktivitet(string $aktivitet): Response {
     $db=connectDb();
 
     //skicka fråga 
+    try {
     $stmt=$db->prepare("INSERT INTO aktiviteter (aktivitet) VALUES (:aktivitet)");
     $svar=$stmt->execute(['aktivitet'=>$saneradAktivitet]);
-
+    } catch (Exception $e) {
+        $retur=new stdClass();
+        $retur->error=['Bad request', "kan inte spara flera aktiviteter med texten '$saneradAktivitet' "];
+        return new Response($retur, 400);
+    }
     //kontrollera resultat och returnera svar
     if($svar===true) {
         $retur=new stdClass();
@@ -174,4 +179,38 @@ function uppdateraAktivitet(string $id, string $aktivitet): Response {
  * @return Response
  */
 function raderaAktivetet(string $id): Response {
+    //kontrollera indata
+    $kontrolleratId=filter_var($id, FILTER_VALIDATE_INT);
+
+    if($kontrolleratId===false) {
+    $retur=new stdClass();
+    $retur->error=['Bad request', "ogiltigt id"];
+    return new Response($retur, 400);
+    }
+
+    //koppla databas
+    $db=connectDb();
+
+    //skicka fråga 
+    try {
+        $stmt=$db->prepare("DELETE FROM aktiviteter WHERE id=:id");
+        $stmt->execute(['id'=>$kontrolleratId]);
+    } catch (Exception $e) {
+        $retur=new stdClass();
+        $retur->error=['Bad request', "kan inte radera en aktivitet om det finns sparade uppgifter"];
+        return new Response($retur, 400);
+    }
+
+    //kontrollera resultat och returnera svar
+    if($stmt->rowCount()>0) {
+        $retur=new stdClass();
+        $retur->result=true;
+        $retur->meddelande=["radera lyckades", $stmt->rowCount() ." poster raderades"];
+        return new Response($retur);
+    } else {
+       $retur=new stdClass();
+        $retur->result=true;
+        $retur->meddelande=["radera misslyckades", " inga poster raderades"]; 
+        return new Response($retur);
+    }
 }
