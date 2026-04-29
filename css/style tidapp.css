@@ -1,0 +1,101 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #111;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.screen {
+  width: 95%;
+  max-width: 1400px;
+  height: 90vh;
+  border: 2px solid #fff;
+  border-radius: 18px;
+  background:
+    linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
+    #000;
+  background-size: 20px 20px;
+  padding: 10px;
+}
+.title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.tabs button {
+  background: #111;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 12px 25px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.page {
+  border: 1px solid #fff;
+  height: calc(100% - 70px);
+  padding: 10px;
+  display: none;
+}
+.page.active {
+  display: block;
+}
+.box {
+  border: 1px solid #fff;
+  padding: 14px;
+  text-align: center;
+  font-weight: bold;
+}
+.flex {
+  display: flex;
+  gap: 10px;
+}
+.sidebar {
+  width: 180px;
+}
+.sidebar .box {
+  margin-bottom: 10px;
+}
+.main {
+  flex: 1;
+}
+.table {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+.task-table {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 2fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.plus {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+}

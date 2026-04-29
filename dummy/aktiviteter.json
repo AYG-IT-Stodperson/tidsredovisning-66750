@@ -1,0 +1,22 @@
+{
+	"table": "aktiviteter",
+	"rows":
+	[
+		{
+			"id": 4,
+			"aktivitet": "funcar!"
+		},
+		{
+			"id": 1,
+			"aktivitet": "funkar"
+		},
+		{
+			"id": 3,
+			"aktivitet": "html"
+		},
+		{
+			"id": 2,
+			"aktivitet": "javascript"
+		}
+	]
+}

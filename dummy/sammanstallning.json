@@ -1,0 +1,22 @@
+{
+	"activities",
+	
+	[
+		{
+			"id": 4,
+			"activity": "funcar!"
+		},
+		{
+			"id": 1,
+			"activity": "funkar"
+		},
+		{
+			"id": 3,
+			"activity": "html"
+		},
+		{
+			"id": 2,
+			"activity": "javascript"
+		}
+	]
+}
