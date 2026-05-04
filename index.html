@@ -6,47 +6,59 @@
 <title>tidapp</title>
 <link rel="stylesheet" href="style tidapp.css">
 </head>
+
 <body>
 
 <div class="screen">
 
   <div class="tabs">
-    <button onclick="showPage('uppgifter')">Aktiviteter</button>
-    <button onclick="showPage('aktiviteter')">Uppgifter</button>
+    <button onclick="showPage('sammanställning')">Sammanställning</button>
+    <button onclick="showPage('aktiviteter')">Aktiviteter</button>
+    <button onclick="showPage('uppgifter')">Uppgifter</button>
   </div>
 
-  <div id="uppgifter" class="page active">
+  <div id="sammanställning" class="page">
+    <div class="header-row">
+      <div class="box" style="width:200px;">Sammanställning</div>
+    </div>
+
+    <div class="date-filter">
+      <input type="date" id="framDatum">
+      <input type="date" id="tillDatum">
+    </div>
+
+    <ul id="ul"></ul>
+  </div>
+
+  <div id="aktiviteter" class="page active">
     <div class="flex">
       <div class="sidebar">
+
         <div class="header-row">
           <div class="box">aktiviteter</div>
           <div class="plus">+</div>
         </div>
-        <div class="box">javascript</div>
-        <div class="box">php</div>
-        <div class="box">html</div>
-      </div>
 
-      <div class="main">
-        <div class="table"></div>
-        <div class="chart"></div>
+        <div class="task-table" id="taskTablet"></div>
+
       </div>
     </div>
   </div>
 
-  <div id="aktiviteter" class="page">
+  <div id="uppgifter" class="page">
     <div class="header-row">
       <div class="box" style="width:200px;">Uppgifter</div>
       <div class="plus">+</div>
     </div>
 
-    <div class="task-table">
+    <div class="task-table" id="taskTable">
       <div class="box">datum</div>
       <div class="box">tid/datum</div>
       <div class="box">aktivitet</div>
       <div class="box">beskrivning</div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -58,7 +70,10 @@ function showPage(pageId){
 }
 </script>
 
-</body>
 <script src="./js/main.js"></script>
-<script scr="./js/index.js"></script>
+<script src="./js/index.js"></script>
+<script src="./js/uppgifter.js"></script>
+<script src="./js/aktiviteter.js"></script>
+
+</body>
 </html>
