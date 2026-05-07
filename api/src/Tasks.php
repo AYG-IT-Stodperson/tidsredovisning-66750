@@ -31,7 +31,6 @@ function tasklists(Route $route): Response {
  * @return Response
  */
 function tasks(Route $route, array $postData): Response {
-    return new Response("Tasks");
     try {
         if (count($route->getParams()) === 1 && $route->getMethod() === RequestMethod::GET) {
             return hamtaEnskildUppgift($route->getParams()[0]);
@@ -107,7 +106,7 @@ ORDER BY date limit $firstRecord, $posterPerSida");
         $post->id=$row['id'];
         $post->activityId=$row['aktivitet_id'];
         $post->date=$row['date'];
-        $post->time=$row['varaktighet'];
+        $post->time=substr( $row['varaktighet'], 0,5);
         $post->activity=$row['aktivitet'];
         $post->description=$row['beskrivning'];
         $retur[]=$post;
@@ -117,7 +116,7 @@ ORDER BY date limit $firstRecord, $posterPerSida");
     $svar->pages=$antalSidor;
     $svar->tasks=$retur;
 
-    return new Response($retur);
+    return new Response($svar);
 }
 
 /**
@@ -172,7 +171,7 @@ ORDER BY date');
         $post->id=$row['id'];
         $post->activityId=$row['aktivitet_id'];
         $post->date=$row['date'];
-        $post->time=$row['varaktighet'];
+        $post->time=substr( $row['varaktighet'], 0,5);
         $post->activity=$row['aktivitet'];
         $post->description=$row['beskrivning'];
         $retur[]=$post;
@@ -187,7 +186,41 @@ ORDER BY date');
  * @return Response
  */
 function hamtaEnskildUppgift(string $id): Response {
-    
+    //kontrollera indata
+    $taskId=filter_var($id, FILTER_VALIDATE_INT);
+
+    if($taskId===false) {
+        $retur=new stdClass();
+        $retur->error=['Bad request', 'Ogiltigt uppgifts-id'];
+        return new Response($retur, 400);
+    }
+
+    //koppla databas
+    $db=connectDb();
+
+    //hämta post
+    $stmt=$db->prepare('SELECT uppgifter.id, aktivitet_id, date, varaktighet, aktivitet, beskrivning 
+FROM uppgifter 
+INNER JOIN aktiviteter ON aktiviteter.id=aktivitet_id
+WHERE uppgifter.id=:id');
+    $stmt->execute(['id'=>$taskId]);
+
+    //returnera post
+    $row=$stmt->fetch();
+    if(!$row) {
+        $retur=new stdClass();
+        $retur->error=['bad request', "anvivet id ($taskId) finns inte i databasen"];
+        return new Response($retur, 400);
+    }
+    $retur=new stdClass();
+    $retur->id=$row['id'];
+    $retur->date=$row['date'];
+    $retur->time=substr( $row['varaktighet'], 0,5);
+    $retur->activityId=$row['aktivitet_id'];
+    $retur->activity=$row['aktivitet'];
+    $retur->description=$row['beskrivning'];
+
+    return new Response($retur);
 }
 
 /**
