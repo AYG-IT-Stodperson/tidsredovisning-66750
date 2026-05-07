@@ -94,8 +94,30 @@ function hamtaSida(string $sida): Response {
     }
 
     //skicka fråga om aktuell sida 
+    $firstRecord=$sidnummer*$posterPerSida-($posterPerSida-1);
+        $result = $db->query("SELECT uppgifter.id, aktivitet_id, date, varaktighet, aktivitet, beskrivning 
+FROM uppgifter 
+INNER JOIN aktiviteter ON aktiviteter.id=aktivitet_id
+ORDER BY date limit $firstRecord, $posterPerSida");
 
     //returnera svar
+    $retur=[];
+    foreach($result->fetchALL() as $row) {
+        $post=new stdClass();
+        $post->id=$row['id'];
+        $post->activityId=$row['aktivitet_id'];
+        $post->date=$row['date'];
+        $post->time=$row['varaktighet'];
+        $post->activity=$row['aktivitet'];
+        $post->description=$row['beskrivning'];
+        $retur[]=$post;
+    }
+
+    $svar=new stdClass();
+    $svar->pages=$antalSidor;
+    $svar->tasks=$retur;
+
+    return new Response($retur);
 }
 
 /**
