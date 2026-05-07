@@ -1,11 +1,12 @@
 window.onload = () => {
     rensaListan();
- //   setDateInterval();
+    setDateInterval();
     getTasklist();
-}
+};
 
-function rensaListan() { 
-    document.getElementById("ul").innerHTML = "";
+function rensaListan() {
+    const ul = document.getElementById("ul");
+    if (ul) ul.innerHTML = "";
 }
 
 function setDateInterval() {
@@ -15,54 +16,30 @@ function setDateInterval() {
     let fromDatum = new Date(idag.getFullYear(), aktuellManad, 1);
     let toDatum = new Date(idag.getFullYear(), aktuellManad + 1, 0);
 
-    document.getElementById("framDatum").value = fromDatum.toISOString().substring(0,10);
-    document.getElementById("tillDatum").value = toDatum.toISOString().substring(0,10);
-}
+    const from = document.getElementById("framDatum");
+    const to = document.getElementById("tillDatum");
 
-function getCompilation() {
-    let data = {
-        tasks: [
-            { id:3, time: "3:00", name:"html" },
-            { id:2, time: "2:15", name:"javascript" }
-        ]
-    };
-
-    fyllLista(data);
-    fyllUppgifter(data);
+    if (from) from.value = fromDatum.toISOString().substring(0, 10);
+    if (to) to.value = toDatum.toISOString().substring(0, 10);
 }
 
 function getTasklist() {
     fetch("dummy/uppgifter.json")
         .then(response => {
-            if(response.ok) { 
-                return response.json();
+            if (!response.ok) {
+                throw new Error(`HTTP fel: ${response.status}`);
             }
-
-            //response är inte ok...
-            return response.json()
-                .catch(()=>null) //är svaret inte json händer inget
-                .then(message=>{
-                    let fel ={status:response.status,
-                        text: response.statusText, 
-                        url: response.url, 
-                        message
-                    }
-
-                    throw fel 
-                })
+            return response.json();
         })
-        .then(data => {
-            fyllUppgifter(data)
-        })
-        .catch(error => {
-            console.error(error)
-        })
+        .then(data => fyllUppgifter(data))
+        .catch(error => console.error("Fel vid hämtning:", error));
 }
 
 function fyllUppgifter(data) {
-    let table = document.getElementById("taskTable");
+    const table = document.getElementById("taskTable");
+    if (!table) return;
 
-    table.innerHTML = `
+    let html = `
         <div class="box">datum</div>
         <div class="box">tid</div>
         <div class="box">aktivitet</div>
@@ -70,11 +47,13 @@ function fyllUppgifter(data) {
     `;
 
     data.tasks.forEach(task => {
-        table.innerHTML += `
+        html += `
             <div class="box">${task.date}</div>
             <div class="box">${task.time}</div>
             <div class="box">${task.aktivitet}</div>
             <div class="box">${task.description}</div>
         `;
     });
+
+    table.innerHTML = html;
 }

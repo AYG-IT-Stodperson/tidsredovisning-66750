@@ -20,6 +20,7 @@
   <div id="sammanställning" class="page">
     <div class="header-row">
       <div class="box" style="width:200px;">Sammanställning</div>
+      <button id="hämta">hämta data</button>
     </div>
 
     <div class="date-filter">
@@ -33,13 +34,14 @@
   <div id="aktiviteter" class="page active">
     <div class="flex">
       <div class="sidebar">
-
+        
         <div class="header-row">
           <div class="box">aktiviteter</div>
-          <div class="plus">+</div>
-        </div>
+          <button id="nyaktivitet">ny aktivitet</button>
 
-        <div class="task-table" id="taskTablet"></div>
+          <div class="task-table" id="tasksTable"></div>
+
+        </div>
 
       </div>
     </div>
@@ -48,7 +50,19 @@
   <div id="uppgifter" class="page">
     <div class="header-row">
       <div class="box" style="width:200px;">Uppgifter</div>
-      <div class="plus">+</div>
+      <button id="nyuppgift">ny uppgift</button>
+      <input type="radio" name="alternativ" value="period" checked>
+      period: 
+
+      <P>
+      <input type="radio" name"alternativ" value="sida">
+      sida: <select>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+      </select>
+      </P>
     </div>
 
     <div class="task-table" id="taskTable">
@@ -69,11 +83,9 @@ function showPage(pageId){
   document.getElementById(pageId).classList.add('active');
 }
 </script>
-
 <script src="./js/main.js"></script>
 <script src="./js/index.js"></script>
 <script src="./js/uppgifter.js"></script>
 <script src="./js/aktiviteter.js"></script>
-
 </body>
 </html>

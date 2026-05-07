@@ -8,6 +8,15 @@ window.onload = () => {
     //alert("hämtar data");
     getCompilation();
 }
+    //rensa listan
+
+    //sätt standardvärde för perioden
+
+    //hämta från API:et
+
+    //eventlisteners
+    document.getElementById("hämta").addEventListener("click", hamtaNyData)
+
 
 function rensaListan() { 
     let lista = document.getElementById("ul");
@@ -44,3 +53,8 @@ function fyllista(data) {
         ul.appendChild(li);
     }
 }   
+
+function hamtaNyData() {
+    rensaLista()
+    getCompilation()
+}

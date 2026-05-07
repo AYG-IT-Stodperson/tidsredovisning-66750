@@ -1,67 +1,40 @@
-window.addEventListener("load", () => {
+window.onload = () => {
     rensaListan();
-    setDateInterval();
-    getActivities();
-});
+    getTasklist();
+};
 
 function rensaListan() {
-    document.getElementById("ul").innerHTML = "";
+    const ul = document.getElementById("ul");
+    if (ul) ul.innerHTML = "";
 }
 
-function setDateInterval() {
-    let idag = new Date();
-    let aktuellManad = idag.getMonth();
-
-    let fromDatum = new Date(idag.getFullYear(), aktuellManad, 1);
-    let toDatum = new Date(idag.getFullYear(), aktuellManad + 1, 0);
-
-    document.getElementById("framDatum").value =
-        fromDatum.toISOString().substring(0, 10);
-
-    document.getElementById("tillDatum").value =
-        toDatum.toISOString().substring(0, 10);
-}
-
-async function getActivities() {
-    try {
-        let response = await fetch("dummy/aktiviteter.json");
-
-        if (!response.ok) {
-            let message = null;
-
-            try {
-                message = await response.text();
-            } finally {
-                throw {
-                    status: response.status,
-                    text: response.statusText,
-                    url: response.url,
-                    message: message
-                };
+function getTasklist() {
+    fetch("dummy/aktiviteter.json")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP fel: ${response.status}`);
             }
-        }
-
-        let data = await response.json();
-        fyllAktiviteter(data);
-
-    } catch (error) {
-        console.error(error);
-    }
+            return response.json();
+        })
+        .then(data => fyllAktiviteter(data))
+        .catch(error => console.error("Fel vid hämtning:", error));
 }
-
 
 function fyllAktiviteter(data) {
-    let table = document.getElementById("taskTablet");
+    const table = document.getElementById("tasksTable");
+    if (!table) return;
 
-    table.innerHTML = `
-        <div class="box"><b>ID</b></div>
-        <div class="box"><b>Aktivitet</b></div>
+    let html = `
+        <div class="box">id</div>
+        <div class="box">aktivitet</div>
     `;
 
     data.tasks.forEach(task => {
-        table.innerHTML += `
+        html += `
             <div class="box">${task.id}</div>
-            <div class="box">${task.name || task.aktivitet}</div>
+            <div class="box">${task.aktivitet}</div>
         `;
     });
+
+    table.innerHTML = html;
 }
