@@ -51,12 +51,13 @@
     <div class="header-row">
       <div class="box" style="width:200px;">Uppgifter</div>
       <button id="nyuppgift">ny uppgift</button>
-      <input type="radio" name="alternativ" value="period" checked>
+      <input type="radio" name="alternativ" value="period" checked onchange="aktiveraAlternativ(event)">
       period: 
 
       <P>
-      <input type="radio" name"alternativ" value="sida">
-      sida: <select>
+      <input type="radio" name="alternativ" value="sida" onchange="aktiveraAlternativ(event)">
+      sida:
+      <select id="sidnr" disabled>
         <option>1</option>
         <option>2</option>
         <option>3</option>

@@ -57,3 +57,59 @@ function fyllUppgifter(data) {
 
     table.innerHTML = html;
 }
+
+function aktiveraAlternativ(ev) {
+    try {
+
+    if(ev.target.value==='sida'){
+        //aktivera rätt kontroller
+        document.getElementById('sidnr').disabled=false;
+        document.getElementById('hamtaSida').disabled=false;
+        hamtadida()
+        //avktivera övriga kontroller
+        document.getElementById('framDatum').disabled=true;
+        document.getElementById('tillDatum').disabled=true;
+        document.getElementById('hamtaSida').disabled=true;
+        hamtadatum()
+    } else {
+        //aktivera rätt kontroller
+        document.getElementById('framDatum').disabled=false;
+        document.getElementById('tillDatum').disabled=false;
+        document.getElementById('hamtaSida').disabled=false;
+        hamtadatum()
+        //avktivera övriga kontroller
+        document.getElementById('sidnr').disabled=true;
+        document.getElementById('hamtaSida').disabled=true;
+        hamtasida()
+    }
+    } catch (error) {
+        console.error(error);
+         //aktivera standard kontroller
+        document.getElementById('framDatum').disabled=false;
+        document.getElementById('tillDatum').disabled=false;
+        document.getElementById('hamtaSida').disabled=false;
+        hamtadatum()
+        //avktivera övriga kontroller
+        document.getElementById('sidnr').disabled=true;
+        document.getElementById('hamtaSida').disabled=true;
+        hamtasida()
+    }
+}
+
+//skapa händelselyssnare för knapparna
+document.getElementById("hamtaDatum").addEventListener("click", hamtaNyDatum)
+document.getElementById("hamtaSida").addEventListener("click", hamtaNySida)
+
+//rensa lista
+rensaLista();
+
+//sätt standardvärde för perioden
+setDateInterval();
+
+//hämta från API:et
+hamtaDatum();
+
+function rensaLista() {
+    let lista = document.getElementById("ul");
+    lista.innerHTML = "";
+}
