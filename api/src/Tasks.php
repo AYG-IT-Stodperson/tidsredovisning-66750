@@ -269,10 +269,10 @@ function raderaUppgift(string $id): Response {
         $retur=new stdClass();
         $retur->result=false;
         $retur->massage=['radera misslyckades', 'inga poster raderades'];
-        return new Response($retur);
+        return new Response($retur, 400);
     }
     $retur=new stdClass();
         $retur->result=false;
         $retur->massage=['radera lyckades', "{$stmt->rowCount()} poster raderades"];
-        return new Response($retur);
+        return new Response($retur, 400);
 }

@@ -1,115 +1,148 @@
 window.onload = () => {
-    rensaListan();
-    setDateInterval();
-    getTasklist();
-};
 
-function rensaListan() {
-    const ul = document.getElementById("ul");
-    if (ul) ul.innerHTML = "";
+    document.getElementById('hamtaDatum').addEventListener("click", hamtaDatum)
+    document.getElementById('hamtaSida').addEventListener("click", hamtaSida)
+
+    rensaLista()
+
+    setDateInterval()
+
+    hamtaDatum()
+
+}
+
+function rensaLista() {
+    let lista = document.getElementById("tom");
+    lista.innerHTML = "";
 }
 
 function setDateInterval() {
     let idag = new Date();
     let aktuellManad = idag.getMonth();
 
-    let fromDatum = new Date(idag.getFullYear(), aktuellManad, 1);
-    let toDatum = new Date(idag.getFullYear(), aktuellManad + 1, 0);
+    let fromDatum = new Date(idag.getFullYear(), aktuellManad, 1, 24);
+    let toDatum = new Date(idag.getFullYear(), aktuellManad + 1, 0, 24);
 
-    const from = document.getElementById("framDatum");
-    const to = document.getElementById("tillDatum");
+    document.getElementById("franDatum").value = fromDatum.toISOString().substring(0, 10);
+    document.getElementById("tillDatum").value = toDatum.toISOString().substring(0, 10);
 
-    if (from) from.value = fromDatum.toISOString().substring(0, 10);
-    if (to) to.value = toDatum.toISOString().substring(0, 10);
 }
 
-function getTasklist() {
+function hamtaDatum() {
+
     fetch("dummy/uppgifter.json")
         .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP fel: ${response.status}`);
+            if (response.ok) {
+                return response.json()
             }
-            return response.json();
+
+            return response.json()
+                .catch(() => null) 
+                .then(message => {
+                    let fel = {
+                        status: response.status,
+                        text: response.statusText,
+                        url: response.url,
+                        message
+                    }
+
+                    throw fel
+                })
         })
-        .then(data => fyllUppgifter(data))
-        .catch(error => console.error("Fel vid hämtning:", error));
+        .then(data => {
+            fyllLista(data)
+        })
+        .catch(error => {
+            console.error(error)
+        })
 }
 
-function fyllUppgifter(data) {
-    const table = document.getElementById("taskTable");
-    if (!table) return;
+function hamtaSida() {
+    
+    fetch("dummy/uppgifter.json")
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            }
 
-    let html = `
-        <div class="box">datum</div>
-        <div class="box">tid</div>
-        <div class="box">aktivitet</div>
-        <div class="box">beskrivning</div>
-    `;
+            
+            return response.json()
+                .catch(() => null) 
+                .then(message => {
+                    let fel = {
+                        status: response.status,
+                        text: response.statusText,
+                        url: response.url,
+                        message
+                    }
 
-    data.tasks.forEach(task => {
-        html += `
-            <div class="box">${task.date}</div>
-            <div class="box">${task.time}</div>
-            <div class="box">${task.aktivitet}</div>
-            <div class="box">${task.description}</div>
-        `;
-    });
+                    throw fel
+                })
+        })
+        .then(data => {
+            fyllLista(data)
+        })
+        .catch(error => {
+            console.error(error)
+        })
+}
 
-    table.innerHTML = html;
+function fyllLista(data) {
+   
+    rensaLista()
+
+    let target = document.getElementById("tom")
+    
+    for (let i = 0; i < data.tasks.length; i++) {
+        let rad = document.createElement("ul")
+        rad.className = "lista"
+        let content = `<li>${data.tasks[i].date}</li>`
+        content += `<li class="right">${data.tasks[i].time}</li>`
+        content += `<li>${data.tasks[i].activity}</li>`
+        content += `<li>${data.tasks[i].description ?? ''}</li>`
+        content += `<li class="right"><a href="editUppgift.html?id=${data.tasks[i].id}"><img class="edit" src="images/edit.png"></a>`
+        content += `<img class="delete" onclick="alertDelete(${data.tasks[i].id})" src="images/delete.png"></li>`
+        rad.innerHTML = content
+        target.appendChild(rad)
+    }
+}
+
+function alertDelete(id) {
+    if (confirm('Vill du radera posten med id=' + id + '?')) {
+        alert("Raderar")
+    }
 }
 
 function aktiveraAlternativ(ev) {
     try {
-
-    if(ev.target.value==='sida'){
-        //aktivera rätt kontroller
-        document.getElementById('sidnr').disabled=false;
-        document.getElementById('hamtaSida').disabled=false;
-        hamtadida()
-        //avktivera övriga kontroller
-        document.getElementById('framDatum').disabled=true;
-        document.getElementById('tillDatum').disabled=true;
-        document.getElementById('hamtaSida').disabled=true;
-        hamtadatum()
-    } else {
-        //aktivera rätt kontroller
-        document.getElementById('framDatum').disabled=false;
-        document.getElementById('tillDatum').disabled=false;
-        document.getElementById('hamtaSida').disabled=false;
-        hamtadatum()
-        //avktivera övriga kontroller
-        document.getElementById('sidnr').disabled=true;
-        document.getElementById('hamtaSida').disabled=true;
-        hamtasida()
-    }
+        if (ev.target.value === 'sida') {
+          
+            document.getElementById('sidnr').disabled = false;
+            document.getElementById('hamtaSida').disabled = false;
+            hamtaSida()
+            
+            document.getElementById('franDatum').disabled = true;
+            document.getElementById('tillDatum').disabled = true;
+            document.getElementById('hamtaDatum').disabled = true;
+        } else {
+            
+            document.getElementById('franDatum').disabled = false;
+            document.getElementById('tillDatum').disabled = false;
+            document.getElementById('hamtaDatum').disabled = false;
+            hamtaDatum()
+            
+            document.getElementById('sidnr').disabled = true;
+            document.getElementById('hamtaSida').disabled = true;
+        }
     } catch (error) {
-        console.error(error);
-         //aktivera standard kontroller
-        document.getElementById('framDatum').disabled=false;
-        document.getElementById('tillDatum').disabled=false;
-        document.getElementById('hamtaSida').disabled=false;
-        hamtadatum()
-        //avktivera övriga kontroller
-        document.getElementById('sidnr').disabled=true;
-        document.getElementById('hamtaSida').disabled=true;
-        hamtasida()
+        console.error(error)
+        
+        document.getElementById('franDatum').disabled = false;
+        document.getElementById('tillDatum').disabled = false;
+        document.getElementById('hamtaDatum').disabled = false;
+        hamtaDatum()
+
+        document.getElementById('sidnr').disabled = true;
+        document.getElementById('hamtaSida').disabled = true;
     }
-}
-
-//skapa händelselyssnare för knapparna
-document.getElementById("hamtaDatum").addEventListener("click", hamtaNyDatum)
-document.getElementById("hamtaSida").addEventListener("click", hamtaNySida)
-
-//rensa lista
-rensaLista();
-
-//sätt standardvärde för perioden
-setDateInterval();
-
-//hämta från API:et
-hamtaDatum();
-
-function rensaLista() {
-    let lista = document.getElementById("ul");
-    lista.innerHTML = "";
 }

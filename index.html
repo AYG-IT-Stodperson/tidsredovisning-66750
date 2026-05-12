@@ -1,92 +1,61 @@
 <!DOCTYPE html>
 <html lang="sv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>tidapp</title>
-<link rel="stylesheet" href="style tidapp.css">
-</head>
-
-<body>
-
-<div class="screen">
-
-  <div class="tabs">
-    <button onclick="showPage('sammanställning')">Sammanställning</button>
-    <button onclick="showPage('aktiviteter')">Aktiviteter</button>
-    <button onclick="showPage('uppgifter')">Uppgifter</button>
-  </div>
-
-  <div id="sammanställning" class="page">
-    <div class="header-row">
-      <div class="box" style="width:200px;">Sammanställning</div>
-      <button id="hämta">hämta data</button>
-    </div>
-
-    <div class="date-filter">
-      <input type="date" id="framDatum">
-      <input type="date" id="tillDatum">
-    </div>
-
-    <ul id="ul"></ul>
-  </div>
-
-  <div id="aktiviteter" class="page active">
-    <div class="flex">
-      <div class="sidebar">
-        
-        <div class="header-row">
-          <div class="box">aktiviteter</div>
-          <button id="nyaktivitet">ny aktivitet</button>
-
-          <div class="task-table" id="tasksTable"></div>
-
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <div id="uppgifter" class="page">
-    <div class="header-row">
-      <div class="box" style="width:200px;">Uppgifter</div>
-      <button id="nyuppgift">ny uppgift</button>
-      <input type="radio" name="alternativ" value="period" checked onchange="aktiveraAlternativ(event)">
-      period: 
-
-      <P>
-      <input type="radio" name="alternativ" value="sida" onchange="aktiveraAlternativ(event)">
-      sida:
-      <select id="sidnr" disabled>
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-      </select>
-      </P>
-    </div>
-
-    <div class="task-table" id="taskTable">
-      <div class="box">datum</div>
-      <div class="box">tid/datum</div>
-      <div class="box">aktivitet</div>
-      <div class="box">beskrivning</div>
-    </div>
-  </div>
-
-</div>
-
-<script>
-function showPage(pageId){
-  document.querySelectorAll('.page').forEach(page=>{
-    page.classList.remove('active');
-  });
-  document.getElementById(pageId).classList.add('active');
-}
-</script>
-<script src="./js/main.js"></script>
-<script src="./js/index.js"></script>
-<script src="./js/uppgifter.js"></script>
-<script src="./js/aktiviteter.js"></script>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Tidapp</title>
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/index.css">
+        <script src="js/main.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1>Tidsrapportering Sammanställning</h1>
+        </header>
+        <nav>
+            <ul>
+                <li class="aktiv">Sammanställning</li>
+                <li><a href="aktiviteter.html">Aktiviteter</a></li>
+                <li><a href="uppgifter.html">Uppgifter</a></li>
+            </ul>
+        </nav>
+        <main>
+            <p>
+                Period:
+                <input type="date" id="franDatum" value="2026-01-01"> --
+                <input type="date" id="tillDatum" value="2026-06-01">
+                <button id="hamta">Hämta data</button>
+            </p>
+            <ul class="lista heading">
+                <li>Aktivitet</li>
+                <li class="right">Total tid</li>
+            </ul>
+            <div id="tom">
+                <!--- ul-taggarna nedan ska tas bort och skapas dynamiskt-->
+                <ul class="lista">
+                    <li>Databas</li>
+                    <li class="right">2:15</li>
+                </ul>
+                <ul class="lista">
+                    <li>Planering</li>
+                    <li class="right">1:30</li>
+                </ul>
+                <ul class="lista">
+                    <li>Gränssnitt Aktiviteter</li>
+                    <li class="right">4:15</li>
+                </ul>
+                <ul class="lista">
+                    <li>Gränssnitt Uppgifter</li>
+                    <li class="right">3:30</li>
+                </ul>
+                <ul class="lista">
+                    <li>API Uppgifter</li>
+                    <li class="right">1:30</li>
+                </ul>
+            </div>
+        </main>
+    </body>
+    <script src="./js/main.js"></script>
+    <script src="./js/index.js"></script>
+    <script src="./js/style tidapp.js"></script>
 </html>

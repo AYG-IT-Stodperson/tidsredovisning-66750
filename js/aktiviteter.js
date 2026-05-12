@@ -1,40 +1,68 @@
 window.onload = () => {
-    rensaListan();
-    getTasklist();
-};
+    rensaLista()
+    //setDateInterval()
+    getActivities()
 
-function rensaListan() {
-    const ul = document.getElementById("ul");
-    if (ul) ul.innerHTML = "";
 }
 
-function getTasklist() {
-    fetch("dummy/aktiviteter.json")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP fel: ${response.status}`);
+function rensaLista() {
+    let lista = document.getElementById("tom");
+    lista.innerHTML = "";
+}
+
+function setDateInterval() {
+    let idag = new Date();
+    let aktuellManad = idag.getMonth();
+
+    let fromDatum = new Date(idag.getFullYear(), aktuellManad, 1, 24);
+    let toDatum = new Date(idag.getFullYear(), aktuellManad + 1, 0, 24);
+
+    document.getElementById("franDatum").value = fromDatum.toISOString().substring(0, 10);
+    document.getElementById("tillDatum").value = toDatum.toISOString().substring(0, 10);
+
+}
+
+async function getActivities() {
+    try {
+        let response= await fetch("dummy/aktiviteter.json")
+        if (response.ok) {
+            let data = await response.json()
+            fyllLista(data)
+        } else {
+            let message=null
+            try{
+                message=await response.json()
+            } finally {
+                let fel ={status:response.status,
+                    text: response.statusText,
+                    url: response.url,
+                    message
+                }
+
+                throw fel
             }
-            return response.json();
-        })
-        .then(data => fyllAktiviteter(data))
-        .catch(error => console.error("Fel vid hämtning:", error));
+        }
+    } catch (error) {
+        console.error(error)
+    }
 }
 
-function fyllAktiviteter(data) {
-    const table = document.getElementById("tasksTable");
-    if (!table) return;
+function fyllLista(data) {
+    let target = document.getElementById("tom")
 
-    let html = `
-        <div class="box">id</div>
-        <div class="box">aktivitet</div>
-    `;
+    for (let i = 0; i < data.activities.length; i++) {
+        let rad = document.createElement("ul")
+        rad.className = "lista"
+        let content = `<li>${data.activities[i].activity}</li>`
+        content += `<li class="right"><a href="editAktivitet.html?id=${data.activities[i].id}"><img class="edit" src="images/edit.png"></a>`
+        content += `<img class="delete" onclick="alertDelete(${data.activities[i].id})" src="images/delete.png"></li>`
+        rad.innerHTML = content
+        target.appendChild(rad)
+    }
+}
 
-    data.tasks.forEach(task => {
-        html += `
-            <div class="box">${task.id}</div>
-            <div class="box">${task.aktivitet}</div>
-        `;
-    });
-
-    table.innerHTML = html;
+function alertDelete(id) {
+    if (confirm('Vill du radera posten med id=' + id + '?')) {
+        alert("Raderar")
+    }
 }
