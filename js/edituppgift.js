@@ -21,7 +21,7 @@ window.onload = () => {
 
 async function getActivities() {
     try {
-        let response = await fetch("dummy/aktiviteter.json")
+        let response = await fetch("api/activity")
         if (response.ok) {
             let data = await response.json()
             aktiviteter = data.activities
@@ -61,23 +61,16 @@ function fillDropdown(aktiviteter) {
 }
 
 async function fillForm(id) {
-    // Hämta uppgifter, just nu alla och välj rätt sedan hämta rätt.
+    // Hämta uppgift
     try {
-        let response = await fetch("dummy/uppgifter.json")
+        let response = await fetch(`api/tasklist/${id}`)
         if (response.ok) {
-            let data = await response.json()
-            // Hitta rätt post
-            let post = data.tasks.find(uppg => uppg.id == id)
-            if (!post) {
-                alert("Uppgiften hittades inte")
-                emptyForm()
-                return
-            }
+            let post = await response.json()
             document.getElementById('labelId').style.display = "initial"
             document.getElementById('valueId').innerText = post.id
             document.getElementById('inputDatum').value = post.date
             document.getElementById('inputVaraktighet').value = post.time
-            document.getElementById('inputBeskrivning').value = post.description
+            document.getElementById('inputBeskrivning').innerHTML = post.description
             // Aktivitet är en dropdown!
             document.getElementById('inputAktivitet').value = post.activityId
         } else {
