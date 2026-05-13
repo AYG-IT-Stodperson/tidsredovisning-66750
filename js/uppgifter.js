@@ -30,7 +30,9 @@ function setDateInterval() {
 
 function hamtaDatum() {
 
-    fetch("dummy/uppgifter.json")
+    let franDatum =document.getElementById("franDatum").value;
+    let tillDatum =document.getElementById("tillDatum").value;
+    fetch(`api/tasklist/${franDatum}/${tillDatum}`)
         .then(response => {
             if (response.ok) {
                 return response.json()
@@ -58,8 +60,8 @@ function hamtaDatum() {
 }
 
 function hamtaSida() {
-    
-    fetch("dummy/uppgifter.json")
+    let sidnr=document.getElementById("sidnr").value;
+    fetch(`api/tasklist/${sidnr}`)
         .then(response => {
             if (response.ok) {
                 return response.json()
@@ -81,6 +83,14 @@ function hamtaSida() {
         })
         .then(data => {
             fyllLista(data)
+            let select=document.getElementById("sidnr")
+            select.innerHTML='';
+            for(let i=0;i<data.totalPages;i++) {
+                let opt=document.createElement("option")
+                opt.text=`${i+1 }`
+                select.appendChild(opt)
+            }
+            select.value=sidnr;
         })
         .catch(error => {
             console.error(error)
