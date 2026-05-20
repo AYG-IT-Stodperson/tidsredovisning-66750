@@ -119,7 +119,32 @@ function fyllLista(data) {
 
 function alertDelete(id) {
     if (confirm('Vill du radera posten med id=' + id + '?')) {
-        alert("Raderar")
+        let form=new FormData()
+        form.append("action", 'delete')
+        featch(`api/task/${id}`, {
+            method:"POST",
+            body: form
+        })
+            .then(response => {
+                if(response.ok) {
+                    return response.json()
+                } else {
+                    throw response.json()
+                }
+            })
+            .then(data => {
+                if(data.result) {
+                    alert('Radera lyckades')
+                    window.location.reload();
+                } else {
+                    alert("redera misslyckades, kontrollera konsolen")
+                    console.log(data)
+                }
+            })
+            .catch(error => {
+                alert("något gick fel vid radering, kontrollera konsolen")
+                console.error(error);
+            })
     }
 }
 

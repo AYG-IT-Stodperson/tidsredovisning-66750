@@ -50,3 +50,20 @@ function emptyForm() {
     document.getElementById('inputAktivitet').value = ''
     document.getElementById('inputAktivitet').focus()
 }
+
+function varifieraForm() {
+    let returKod=true
+
+    document.getElementById('inputAktivitet_Err').innerText=""
+    document.getElementById('inputAktivitet').setCutomvalidity("")
+
+    let aktivitet=window.document.getElementById("inputAktivitet").value;
+    if(allaAktiviteter.find(a => {
+        return a.activity.toLocaleLowerCase() === aktivitet.toLocaleLowerCase()
+    })) {
+        document.getElementById('inputAktivitet_Err').innerText = "aktiviteten finns redan"
+        document.getElementById('inputAktivitet').setCustomValidity("Aktiviteten finns redan")
+        returKod=false
+    }
+    return returKod
+}

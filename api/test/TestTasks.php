@@ -56,7 +56,38 @@ function test_HamtaEnUppgift(): string {
     $retur = "<h2>test_HamtaEnUppgift</h2>";
 
     try {
-        $retur .= "<p class='error'>Inga tester implementerade</p>";
+        // testa -1
+        $svar=hamtaEnskildUppgift("-1");
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>hämta uppgift med id=1 returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>hämta uppgift med id=1 returnerade {$svar->getStatus()}, 400 förväntades</p>";
+        }
+        // testa 'sju'
+        $svar=hamtaEnskildUppgift("sju");
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>hämta uppgift med id='sju' returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>hämta uppgift med id='sju' returnerade {$svar->getStatus()}, 400 förväntades</p>";
+        }
+        //testa uppgift som inte finns 
+        $db=connectDb();
+        $sistaPost=$db->query( 'SELECT MAX(id) FROM uppgifter')->fetchColumn();
+
+        $svar=hamtaEnskildUppgift((string) ($sistaPost + 1));
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>hämta uppgift med id=" . $sistaPost + 1 . " returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>hämta uppgift med id=" . $sistaPost + 1 . " returnerade {$svar->getStatus()}, 400 förväntades</p>";
+        }
+
+        //testa uppgift som finns
+        $svar=hamtaEnskildUppgift((string) ($sistaPost));
+        if($svar->getStatus()===200) {
+            $retur .="<p class='ok'>hämta uppgift med id som finns=" . $sistaPost . " returnerade 200, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>hämta uppgift med id som finns=" . $sistaPost . " returnerade {$svar->getStatus()}, 200 förväntades</p>";
+        }
     } catch (Exception $ex) {
         $retur .= "<p class='error'>Något gick fel, meddelandet säger:<br> {$ex->getMessage()}</p>";
     }
@@ -71,10 +102,60 @@ function test_HamtaEnUppgift(): string {
 function test_SparaUppgift(): string {
     $retur = "<h2>test_SparaUppgift</h2>";
 
+        $db=connectDb();
     try {
+        //skapa transaktion för att inte fylla databasen med skräp
+        $db->beginTransaction();
+
+        //sätt upp testdata
+        $postData=['date'=>'2020-13-35',
+            'time'=>'01:00',
+            'activityId'=>-1,
+            'description'=>"Test"
+            ];
+
+        //test där varifiering misslyckas. -> 400
+        $svar=SparaNyUppgift($postData);
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>spara post med felaktig indata returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>spara post med felaktig indata returnerade {$svar->getStatus()}, 400 förväntades</p>";
+        }
+
+        //test med felaktig aktivitetsId -> 400
+        $aktivitetsId= $db->query ( 'SELECT MAX(id) FROM aktiviteter')->fetchColumn();
+        $postData['data']=date('Y-m-d', strtotime('yesterday'));
+        $postData['activityId']=$aktivitetsId +1;
+        $svar=sparaNyUppgift($postData);
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>spara post med felaktigt aktivitetsId returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>spara post med felaktigt aktivitetsId returnerade {$svar->getStatus()}, 400 förväntades</p>";
+        }
+
+        //test utan description ->200
+        $postData['activityId']=$aktivitetsId;
+        unset($postDate['description']);
+        $svar=SparaNyUppgift($postData);
+        if($svar->getStatus()===200) {
+            $retur .="<p class='ok'>spara post utan description returnerade 200, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>sspara post utan description returnerade {$svar->getStatus()}, 200 förväntades</p>";
+        }
+
+        //test med description 
+        $postData['descriptiom']="Test";
+        $svar=SparaNyUppgift($postData);
+        if($svar->getStatus()===200) {
+            $retur .="<p class='ok'>spara post med description returnerade 200, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>sspara post med description returnerade {$svar->getStatus()}, 200 förväntades</p>";
+        }
         $retur .= "<p class='error'>Inga tester implementerade</p>";
     } catch (Exception $ex) {
         $retur .= "<p class='error'>Något gick fel, meddelandet säger:<br> {$ex->getMessage()}</p>";
+    } finally {
+        $db->rollBack();
     }
 
     return $retur;

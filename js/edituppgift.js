@@ -1,4 +1,5 @@
 let aktiviteter = []
+let aktulltUppgiftId=null
 window.onload = () => {
     let queryString = window.location.search
     let parameters = new URLSearchParams(queryString)
@@ -6,6 +7,7 @@ window.onload = () => {
     getActivities()
         .finally(() => {
             if (parameters.has('id')) {
+                aktuelltUppgiftId=parameters
                 fillForm(parameters.get('id'))
             } else {
                 emptyForm()
@@ -111,9 +113,66 @@ function sparaUppgift() {
         return
     }
 
-    alert ('Hurra, sparar detta direkt')
+    if(akuelltUppgiftId) {
+        uppdateraBefintligUppgift
+    } else {
+        
+    }
 }
-
+ function sparaNyUppgift() {
+    let form=new FormData()
+    form.append("date", document.getElementById('inputDatum').value)
+    form.append("time", document.getElementById('inputVaraktighet').value)
+    form.append("activityId", document.getElementById('inputAktivitet').value)
+    form.append("description", document.getElementById('inputBeskrivning').value)
+    form.append("action", "save")
+    fetch("api/task", {
+        method: "POST",
+        body:form
+    })
+        .then(response => {
+            if(response.ok) {
+                return response.json()
+            } else {
+                throw response.json()
+            }
+        })
+        .then(data => {
+            alert (`Ny post sparades med id=${data.id}`)
+            window.location.href=`editUppgift.html?id=${data.id}`
+        })
+        .catch(err =>{ 
+            alert("spara misslyckades, titta i konsolen för närmare besked")
+            console.error(err)
+        })
+        function uppdateraBefintligUppgift() {
+        let form=new FormData()
+    form.append("date", document.getElementById('inputDatum').value)
+    form.append("time", document.getElementById('inputVaraktighet').value)
+    form.append("activityId", document.getElementById('inputAktivitet').value)
+    form.append("description", document.getElementById('inputBeskrivning').value)
+    form.append("action", "save")
+    fetch("api/task", {
+        method: "POST",
+        body:form
+    })
+        .then(response => {
+            if(response.ok) {
+                return response.json()
+            } else {
+                throw response.json()
+            }
+        })
+        .then(data => {
+            alert (`Ny post sparades med id=${data.id}`)
+            window.location.href=`editUppgift.html?id=${data.id}`
+        })
+        .catch(err =>{ 
+            alert("uppdatera misslyckades, titta i konsolen för närmare besked")
+            console.error(err)
+        })
+}
+}
 function valideraFormular() {
     let valid=true
 
