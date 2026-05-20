@@ -151,7 +151,6 @@ function test_SparaUppgift(): string {
         } else {
             $retur .="<p class='error'>sspara post med description returnerade {$svar->getStatus()}, 200 förväntades</p>";
         }
-        $retur .= "<p class='error'>Inga tester implementerade</p>";
     } catch (Exception $ex) {
         $retur .= "<p class='error'>Något gick fel, meddelandet säger:<br> {$ex->getMessage()}</p>";
     } finally {
@@ -165,13 +164,67 @@ function test_SparaUppgift(): string {
  * Test för funktionen uppdatera befintlig uppgift
  * @return string html-sträng med alla resultat för testerna
  */
-function test_UppdateraUppgifter(): string {
+function test_uppdateraUppgifter(): string {
     $retur = "<h2>test_UppdateraUppgifter</h2>";
 
+    $db=connectDb();
     try {
-        $retur .= "<p class='error'>Inga tester implementerade</p>";
+        $db->beginTransaction();
+        //hitta ett befintligt aktivitetsid
+        $aktivitetsId=$db->query('SELECT MAX(id) FROM aktiviteter')->fetchColumn();
+        //skapa en ny uppgift som ska uppdateras
+        $postData=[
+            'date'=>('Y-m-d, strtotime'('yesterday')),
+            'time'=>'01:00',
+            'activityId'=>$aktivitetsId ,
+            'description'=>"Test"
+            ];
+            $svar=sparaNyUppgift($postData);
+            $id=$svar->getContent()->id;
+
+        //test med felaktig indata
+        $postDate['date']=date('Y-m-d', strtotime('tomorrow'));
+        $svar=uppdateraUppgift($id, $postData);
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>Uppdatera post med felaktig indata (datum=i morgon) returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>Uppdatera post med felaktig indata (datum=i morgon) {$svar->getStatus()}, 400 förväntades</p>";
+        }
+        //test med ogiltig aktivitetsid
+        $postDate['date']=date('Y-m-d', strtotime('yesterday'));
+        $postDate['activityId']=$aktivitetsId+1;
+        $svar=UppdateraUppgift($id, $postData);
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>Uppdatera post med felaktig indata (datum=i morgon) returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>Uppdatera post med felaktig indata (datum=i morgon) {$svar->getStatus()}, 400 förväntades</p>";
+        }
+        //test med felaktig id (-1) -> 400
+        $postDate['activityId']=$aktivitetsId;
+        $svar=UppdateraUppgift( '-1', $postData);
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>Uppdatera post med felaktig id (-1) returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>Uppdatera post med felaktig id (-1) {$svar->getStatus()}, 400 förväntades</p>";
+        }
+        //test med felaktig id ('sju') -> 400
+        $postDate['activityId']=$aktivitetsId;
+        $svar=UppdateraUppgift( 'sju', $postData);
+        if($svar->getStatus()===400) {
+            $retur .="<p class='ok'>Uppdatera post med felaktig id (sju) returnerade 400, som förväntat</p>";
+        } else {
+            $retur .="<p class='error'>Uppdatera post med felaktig id (sju) {$svar->getStatus()}, 400 förväntades</p>";
+        }
+        //test utan description -> 200
+
+        //test med description
+
+        //test utan några ändringar
+
     } catch (Exception $ex) {
         $retur .= "<p class='error'>Något gick fel, meddelandet säger:<br> {$ex->getMessage()}</p>";
+    } finally {
+
     }
 
     return $retur;
