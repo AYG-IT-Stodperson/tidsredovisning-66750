@@ -1,0 +1,116 @@
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0 auto;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    background-color: lightblue;
+    width: clamp(300px, 100vw, 1000px);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    display: inline-block;
+    width: 100%;
+}
+
+h1 {
+    font-size: clamp(1.4em, 2.5vw, 40px);
+}
+
+body {
+    display: grid;
+    grid-template-rows: 5em 3.1em auto 2em;
+}
+
+header {
+    margin: 0 auto;
+    max-height: 5em;
+}
+
+nav {
+}
+
+nav ul {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    padding: 0;
+    justify-content: space-around;
+    margin: 0 auto;
+}
+
+nav ul li {
+    border: 1px solid black;
+    padding: 1em;
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+}
+
+main {
+    padding: 5px;
+    min-height: 100px;
+    overflow-y: auto;
+}
+
+footer {
+    border-top: 4px double black;
+    margin: 0;
+}
+
+footer p {
+    margin: 0.3em auto;
+    text-align: center;
+}
+
+fieldset {
+    width: clamp(100px, 80vw, 800px);
+    margin: 1em auto;
+}
+
+label {
+    display: block;
+    padding: 5px 0;
+}
+
+div.tom {
+    margin: 0;
+    padding: 0;
+}
+
+li.aktiv {
+    background-color: lightcyan;
+}
+
+li.right {
+    text-align: right;
+}
+
+.lista {
+    display: grid;
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.lista:nth-child(odd) {
+    background-color: lavender;
+}
+
+.lista:nth-child(even) {
+    background-color: lavenderblush;
+}
+
+.lista li {
+    padding: 2px 5px;
+}
+
+.lista.heading {
+    font-weight: bold;
+    background-color: silver;
+}

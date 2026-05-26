@@ -1,15 +1,15 @@
 <?php
 
 declare (strict_types=1);
-require_once __DIR__ . '/activities.php';
+require_once __DIR__ . '/Activities.php';
 
 /**
- * Hämtar en lista med alla uppgifter och tillhörande aktiviteter 
+ * Hämtar en lista med alla uppgifter och tillhörande aktiviteter
  * Beroende på indata returneras en sida eller ett datumintervall
  * @param Route $route indata med information om vad som ska hämtas
  * @return Response
  */
-function tasklists(Route $route): Response {
+function tasklists(Route $route):Response {
     try {
         if (count($route->getParams()) === 1 && $route->getMethod() === RequestMethod::GET) {
             return hamtaSida($route->getParams()[0]);
@@ -30,7 +30,7 @@ function tasklists(Route $route): Response {
  * @param array $postData Indata för behandling i angiven rutt
  * @return Response
  */
-function tasks(Route $route, array $postData): Response {
+function tasks(Route $route, array $postData):Response {
     try {
         if (count($route->getParams()) === 1 && $route->getMethod() === RequestMethod::GET) {
             return hamtaEnskildUppgift($route->getParams()[0]);
@@ -39,7 +39,7 @@ function tasks(Route $route, array $postData): Response {
             return sparaNyUppgift($postData);
         }
         if (count($route->getParams()) === 1 && $route->getMethod() === RequestMethod::PUT) {
-            return uppdateraUppgift( $route->getParams()[0], $postData);
+            return uppdateraUppgift($route->getParams()[0], $postData);
         }
         if (count($route->getParams()) === 1 && $route->getMethod() === RequestMethod::DELETE) {
             return raderaUppgift($route->getParams()[0]);
@@ -54,67 +54,65 @@ function tasks(Route $route, array $postData): Response {
  * @param string $sida
  * @return Response
  */
-function hamtaSida(string $sida): Response {
-    //kontrollera indata
-    $sidnummer=filter_var($sida, FILTER_VALIDATE_INT);
+function hamtaSida(string $sida):Response {
+    // Kontrollera indata
+    $sidnummer = filter_var($sida, FILTER_VALIDATE_INT);
 
-    if($sidnummer===false) {
-        $retur=new stdClass();
-        $retur->error=['Bad request', 'Ogiltigt sidnummer'];
+    if ($sidnummer === false) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', 'Ogiltigt sidnummer'];
 
         return new Response($retur, 400);
-    } elseif ($sidnummer<1) {
-        $retur=new stdClass();
-        $retur->error=['Bad request', 'sidnummmer ska vara större än noll'];
+    } elseif ($sidnummer < 1) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', 'Sidnummer ska vara större än noll'];
 
         return new Response($retur, 400);
     }
 
-    //hämta antal poster per sida
-    $settings=new Settings();
-    $posterPerSida=$settings->recordsPerPage;
+    // Hämta antal poster per sida
+    $settings = new Settings();
+    $posterPerSida = $settings->recordsPerPage;
 
+    // Koppla databas
+    $db = connectDb();
 
-    //koppla databas
-    $db=connectDb();
+    // Skicka fråga om antal poster
+    $result = $db->query("SELECT COUNT(*) FROM uppgifter");
+    $antalRader = $result->fetchColumn();
+    $antalSidor = ceil($antalRader / $posterPerSida);
 
-    //skicka fråga om antal poster
-    $result=$db->query("SELECT COUNT(*) FROM uppgifter");
-    $antalRader=$result->fetchColumn();
-    $antalSidor= ceil($antalRader/$posterPerSida);
-
-    //kontrollera begärd sida
-    if($sidnummer > $antalSidor) {
-        $retur=new stdClass();
-        $retur->error=['Bad request', "det finns bara $antalSidor"];
+    // Kontrollera begärd sida
+    if ($sidnummer > $antalSidor) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', "Det finns bara $antalSidor sidor"];
 
         return new Response($retur, 400);
-
     }
 
-    //skicka fråga om aktuell sida 
-    $firstRecord=$sidnummer*$posterPerSida-($posterPerSida-1);
-        $result = $db->query("SELECT uppgifter.id, aktivitet_id, date, varaktighet, aktivitet, beskrivning 
-FROM uppgifter 
+    // Skicka fråga för aktuell sida
+    $firstRecord = $sidnummer * $posterPerSida - $posterPerSida;
+    $result = $db->query("SELECT uppgifter.id, aktivitet_id, datum, varaktighet,aktivitet, beskrivning 
+FROM uppgifter
 INNER JOIN aktiviteter ON aktiviteter.id=aktivitet_id
-ORDER BY date limit $firstRecord, $posterPerSida");
+ORDER BY datum LIMIT $firstRecord, $posterPerSida");
 
-    //returnera svar
-    $retur=[];
-    foreach($result->fetchALL() as $row) {
-        $post=new stdClass();
-        $post->id=$row['id'];
-        $post->activityId=$row['aktivitet_id'];
-        $post->date=$row['date'];
-        $post->time=substr( $row['varaktighet'], 0,5);
-        $post->activity=$row['aktivitet'];
-        $post->description=$row['beskrivning'];
-        $retur[]=$post;
+    // Returnera svar
+    $retur = [];
+    foreach ($result->fetchAll() as $row) {
+        $post = new stdClass();
+        $post->id = $row['id'];
+        $post->activityId = $row['aktivitet_id'];
+        $post->date = $row['datum'];
+        $post->time = substr($row['varaktighet'], 0, 5);
+        $post->activity = $row['aktivitet'];
+        $post->description = $row['beskrivning'];
+        $retur[] = $post;
     }
 
-    $svar=new stdClass();
-    $svar->pages=$antalSidor;
-    $svar->tasks=$retur;
+    $svar = new stdClass();
+    $svar->pages = $antalSidor;
+    $svar->tasks = $retur;
 
     return new Response($svar);
 }
@@ -125,60 +123,60 @@ ORDER BY date limit $firstRecord, $posterPerSida");
  * @param string $tom
  * @return Response
  */
-function hamtaDatum(string $from, string $tom): Response {
-    //kontrollerra indata
-    $fromDate=DateTimeImmutable::createFromFormat("Y-m-d", $from);
-    $tomDate=DateTimeImmutable::createFromFormat("Y-m-d", $tom);
+function hamtaDatum(string $from, string $tom):Response {
+    // Kontrollera indata
+    $fromDate = DateTimeImmutable::createFromFormat("Y-m-d", $from);
+    $tomDate = DateTimeImmutable::createFromFormat("Y-m-d", $tom);
 
-    $err=[];
-    if($fromDate===false) {
-        $err[]="oglitigt från-datum";
-    } elseif($fromDate->format('Y-m-d')!==$from) {
-        $err[]="ogiltigt format på från-datum";
+    $err = [];
+    if ($fromDate === false) {
+        $err[] = "Ogiltigt från-datum";
+    } elseif ($fromDate->format('Y-m-d') !== $from) {
+        $err[] = "Ogiltigt format på från-datum";
     }
-    if($tomDate===false) {
-        $err[]="oglitigt till-datum";
-        } elseif($tomDate->format('Y-m-d')!==$tom) {
-        $err[]="ogiltigt format på till-datum";
-    } 
-    if(count($err)===0 && $fromDate->format('Y-m-d')>$tomDate->format('Y-m-d')) {
-        $err[]="från-datum ska vara mindre än till datum";
+    if ($tomDate === false) {
+        $err[] = "Ogiltigt till-datum";
+    } elseif ($tomDate->format('Y-m-d') !== $tom) {
+        $err[] = "Ogiltigt format på till-datum";
+    }
+    if (count($err) === 0 && $fromDate->format('Y-m-d') > $tomDate->format('Y-m-d')) {
+        $err[] = "Från-datum ska vara mindre än till-datum";
     }
 
-    if(count($err)>0) {
+    if (count($err) > 0) {
         array_unshift($err, 'Bad request');
-        $retur=new stdClass();
-        $retur->error=$err;
+        $retur = new stdClass();
+        $retur->error = $err;
+
         return new Response($retur, 400);
     }
 
+    // Koppla databas
+    $db = connectDb();
 
-    //koppla databas
-    $db=connectDb();
-
-    //skicka fråga 
-    $stmt=$db->prepare('SELECT uppgifter.id, aktivitet_id, date, varaktighet, aktivitet, beskrivning 
-FROM uppgifter 
+    // Skicka fråga
+    $stmt = $db->prepare('SELECT uppgifter.id, aktivitet_id, datum, varaktighet,aktivitet, beskrivning 
+FROM uppgifter
 INNER JOIN aktiviteter ON aktiviteter.id=aktivitet_id
-WHERE date BETWEEN :from AND :to
-ORDER BY date');
-    $stmt->execute(['from'=>$fromDate->format("Y-m-d"), 'to'=>$tomDate->format("Y-m-d")]);
+WHERE datum BETWEEN :from AND :to
+ORDER BY datum');
+    $stmt->execute(['from' => $fromDate->format('Y-m-d'), 'to' => $tomDate->format("Y-m-d")]);
 
-    //kontrollera svar och returera data
-    $retur=[];
-    foreach($stmt->fetchALL() as $row) {
-        $post=new stdClass();
-        $post->id=$row['id'];
-        $post->activityId=$row['aktivitet_id'];
-        $post->date=$row['date'];
-        $post->time=substr( $row['varaktighet'], 0,5);
-        $post->activity=$row['aktivitet'];
-        $post->description=$row['beskrivning'];
-        $retur[]=$post;
+    // Kontrollera svar och returnera data
+    $retur = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $post = new stdClass();
+        $post->id = $row['id'];
+        $post->activityId = $row['aktivitet_id'];
+        $post->date = $row['datum'];
+        $post->time = substr($row['varaktighet'], 0, 5);
+        $post->activity = $row['aktivitet'];
+        $post->description = $row['beskrivning'];
+        $retur[] = $post;
     }
-    $svar=new stdClass();
-    $svar->tasks=$retur;
-    
+    $svar = new stdClass();
+    $svar->tasks = $retur;
+
     return new Response($svar);
 }
 
@@ -187,40 +185,42 @@ ORDER BY date');
  * @param string $id Id för post som ska hämtas
  * @return Response
  */
-function hamtaEnskildUppgift(string $id): Response {
-    //kontrollera indata
-    $taskId=filter_var($id, FILTER_VALIDATE_INT);
+function hamtaEnskildUppgift(string $id):Response {
+    // Kontrollera indata
+    $taskId = filter_var($id, FILTER_VALIDATE_INT);
 
-    if($taskId===false) {
-        $retur=new stdClass();
-        $retur->error=['Bad request', 'Ogiltigt uppgifts-id'];
+    if ($taskId === false) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', 'Ogiltigt uppgiftsid'];
+
         return new Response($retur, 400);
     }
 
-    //koppla databas
-    $db=connectDb();
+    // Koppla databas
+    $db = connectDb();
 
-    //hämta post
-    $stmt=$db->prepare('SELECT uppgifter.id, aktivitet_id, date, varaktighet, aktivitet, beskrivning 
-FROM uppgifter 
+    // Hämta post
+    $stmt = $db->prepare('SELECT uppgifter.id, aktivitet_id, datum, varaktighet,aktivitet, beskrivning 
+FROM uppgifter
 INNER JOIN aktiviteter ON aktiviteter.id=aktivitet_id
 WHERE uppgifter.id=:id');
-    $stmt->execute(['id'=>$taskId]);
+    $stmt->execute(['id' => $taskId]);
 
-    //returnera post
-    $row=$stmt->fetch();
-    if(!$row) {
-        $retur=new stdClass();
-        $retur->error=['bad request', "anvivet id ($taskId) finns inte i databasen"];
+    // Returnera svar
+    $row = $stmt->fetch();
+    if (!$row) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', "Angivet id ($taskId) finns inte i databasen"];
+
         return new Response($retur, 400);
     }
-    $retur=new stdClass();
-    $retur->id=$row['id'];
-    $retur->date=$row['date'];
-    $retur->time=substr( $row['varaktighet'], 0,5);
-    $retur->activityId=$row['aktivitet_id'];
-    $retur->activity=$row['aktivitet'];
-    $retur->description=$row['beskrivning'];
+    $retur = new stdClass();
+    $retur->id = $row['id'];
+    $retur->date = $row['datum'];
+    $retur->time = substr($row['varaktighet'], 0, 5);
+    $retur->activityId = $row['aktivitet_id'];
+    $retur->activity = $row['aktivitet'];
+    $retur->description = $row['beskrivning'];
 
     return new Response($retur);
 }
@@ -230,18 +230,112 @@ WHERE uppgifter.id=:id');
  * @param array $postData indata för uppgiften
  * @return Response
  */
-function sparaNyUppgift(array $postData): Response {
-    
+function sparaNyUppgift(array $postData):Response {
+    // Kontrollera indata
+    $indataErr = kontrolleraIndata($postData);
+
+    if (count($indataErr) > 0) {
+        $retur = new stdClass();
+        $retur->error = array_merge(['Bad request'], $indataErr);
+
+        return new Response($retur, 400);
+    }
+    if (!array_key_exists('description', $postData)) {
+        $postData['description'] = '';
+    } else {
+        $postData['description'] = htmlentities($postData['description']);
+    }
+
+    // Radera action från postdata så att vi kan använda den vid insert-frågan
+    unset($postData['action']);
+
+    // Koppla databas
+    $db = connectDb();
+
+    try {
+        // Skicka fråga
+        $stmt = $db->prepare('INSERT INTO uppgifter (aktivitet_id,datum, varaktighet, beskrivning) 
+VALUES(:activityId, :date, :time, :description)');
+        $stmt->execute($postData);
+
+        // Returnera svar
+        $nyttId = $db->lastInsertId();
+        $retur = new stdClass();
+        $retur->id = $nyttId;
+        $retur->meddelande = ['Spara lyckades'];
+
+        return new Response($retur);
+    } catch (Exception $e) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', 'Fel vid spara (felaktigt aktivitetsid?)'];
+
+        return new Response($retur, 400);
+    }
 }
 
 /**
- * Uppdaterar en angiven uppgiftspost med ny information 
+ * Uppdaterar en angiven uppgiftspost med ny information
  * @param string $id id för posten som ska uppdateras
  * @param array $postData ny data att sparas
  * @return Response
  */
-function uppdateraUppgift(string $id, array $postData): Response {
-    
+function uppdateraUppgift(string $id, array $postData):Response {
+    // Kontrollera indata
+    $indataErr = kontrolleraIndata($postData);
+
+    if (count($indataErr) > 0) {
+        $retur = new stdClass();
+        $retur->error = array_merge(['Bad request'], $indataErr);
+
+        return new Response($retur, 400);
+    }
+    if (!array_key_exists('description', $postData)) {
+        $postData['description'] = '';
+    } else {
+        $postData['description'] = htmlentities($postData['description']);
+    }
+
+    // Kontrollera id
+    $taskId = filter_var($id, FILTER_VALIDATE_INT);
+    if ($taskId === false || $taskId < 1) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', 'Ogiltigt id'];
+
+        return new Response($retur, 400);
+    }
+
+    // Lägg till id till postdata
+    $postData['id'] = $taskId;
+    // Radera action från postdata så att vi kan använda den vid insert-frågan
+    unset($postData['action']);
+
+    // Koppla databas
+    $db = connectDb();
+
+    try {
+        // Skicka fråga
+        $stmt = $db->prepare('UPDATE uppgifter SET 
+                     datum=:date, varaktighet=:time, aktivitet_id=:activityId, beskrivning=:description
+                     WHERE id=:id');
+        $stmt->execute($postData);
+
+        // Kontrollera svar och returnera meddelande
+        $retur = new stdClass();
+        if ($stmt->rowCount() === 0) {
+            $retur->result = false;
+            $retur->message = ["Uppdatera misslyckades", "Inga rader uppdaterades"];
+        } else {
+            $retur->result = true;
+            $retur->message = ["Uppdatera lyckades", "{$stmt->rowCount()} rader uppdaterades"];
+        }
+
+        return new Response($retur);
+    } catch (Exception $e) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', 'Fel vid uppdatera (felaktigt aktivitetsid?)'];
+
+        return new Response($retur, 400);
+    }
 }
 
 /**
@@ -249,32 +343,91 @@ function uppdateraUppgift(string $id, array $postData): Response {
  * @param string $id Id för posten som ska raderas
  * @return Response
  */
-function raderaUppgift(string $id): Response {
-    //kontrollera indata
-    $taskId=filter_var($id, FILTER_VALIDATE_INT);
+function raderaUppgift(string $id):Response {
+    // Kontrollera indata
+    $taskId = filter_var($id, FILTER_VALIDATE_INT);
 
-    if($taskId===false) {
-        $retur=new stdClass();
-        $retur->error=['Bad request', 'ogiltigt id'];
+    if ($taskId === false || $taskId < 1) {
+        $retur = new stdClass();
+        $retur->error = ['Bad request', 'Ogiltigt id'];
+
         return new Response($retur, 400);
     }
 
-    //koppla databas
-    $db=connectDb();
+    // Koppla databas
+    $db = connectDb();
 
-    //skicka fråga
-    $stmt=$db->prepare('DELETE FROM uppgifter WHERE id=:id');
-    $stmt->execute(['id'=>$taskId]);
+    // Skicka fråga
+    $stmt = $db->prepare('DELETE FROM uppgifter WHERE id=:id');
+    $stmt->execute(['id' => $taskId]);
 
-    //kontrollera svar och returnera svar
-    if($stmt->rowCount()===0) {
-        $retur=new stdClass();
-        $retur->result=false;
-        $retur->massage=['radera misslyckades', 'inga poster raderades'];
-        return new Response($retur, 400);
+    // Kontrollera svar och returnera svar
+    if ($stmt->rowCount() === 0) {
+        $retur = new stdClass();
+        $retur->result = false;
+        $retur->message = ['Radera misslyckades', 'Inga poster raderades'];
+
+        return new Response($retur);
     }
-    $retur=new stdClass();
-        $retur->result=false;
-        $retur->massage=['radera lyckades', "{$stmt->rowCount()} poster raderades"];
-        return new Response($retur, 400);
+    $retur = new stdClass();
+    $retur->result = true;
+    $retur->message = ['Radera lyckades', "{$stmt->rowCount()} poster raderades"];
+
+    return new Response($retur);
+}
+
+/**
+ * Indata-arrayen ska innehålla följande:
+ * - date som YYYY-mm-dd
+ * - time som HH:MM
+ * - activityId som heltal
+ * - description som text (kan vara tom!)
+ * @param array $postData
+ * @return array
+ */
+function kontrolleraIndata(array $postData):array {
+    $returArray = [];
+
+    // Indatakontroller för datum ($postData['date'])
+    if (array_key_exists('date', $postData)) {
+        $datum = DateTimeImmutable::createFromFormat('Y-m-d', $postData['date']);
+        if ($datum === false) {
+            $returArray[] = "Ogiltigt datum";
+        } elseif ($datum->format('Y-m-d') !== $postData['date']) {
+            $returArray[] = "Ogiltigt datum-format";
+        } elseif ($datum->format('Y-m-d') > date('Y-m-d')) {
+            $returArray[] = "Datum får inte vara i framtiden";
+        }
+    } else {
+        $returArray[] = "Datum ('date') saknas";
+    }
+    // Indatakontroller för varaktighet ($postData['time'])
+    if (array_key_exists('time', $postData)) {
+        $varaktighet = DateTimeImmutable::createFromFormat('H:i', $postData['time']);
+        if ($varaktighet === false) {
+            $returArray[] = "Ogiltigt varaktighet";
+        } elseif ($varaktighet->format("H:i") !== $postData['time']) {
+            $returArray[] = "Ogiltigt tidsangivelse för varaktighet";
+        } elseif ($postData['time'] > "08:00" || $postData['time'] < "00:15") {
+            $returArray[] = "Varaktigheten ska vara mindre än 8 timmar och minst 15 minuter";
+        } elseif (!in_array(substr($postData['time'], -2), ["00", "15", "30", "45"])) {
+            $returArray[] = "Ange varaktigheten i jämna 15 minuter";
+        }
+    } else {
+        $returArray[] = "Varaktighet ('time') saknas";
+    }
+
+    // Indatakontroll för aktivitetsid ($postData['activityId'])
+    if (array_key_exists('activityId', $postData)) {
+        $activityId = filter_var($postData['activityId'], FILTER_VALIDATE_INT);
+        if ($activityId === false) {
+            $returArray[] = "Ogiltigt aktivitetsid";
+        } elseif ($activityId < 1) {
+            $returArray[] = "Aktivitetsid ('activityId') ska vara större än noll";
+        }
+    } else {
+        $returArray[] = "Aktivitet ('activityId') saknas";
+    }
+
+    return $returArray;
 }

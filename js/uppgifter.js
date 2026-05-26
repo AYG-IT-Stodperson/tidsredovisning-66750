@@ -1,12 +1,15 @@
 window.onload = () => {
-
+    // Skapa händelselyssnare för knapparna
     document.getElementById('hamtaDatum').addEventListener("click", hamtaDatum)
     document.getElementById('hamtaSida').addEventListener("click", hamtaSida)
 
+    // Rensa listan
     rensaLista()
 
+    // Sätt standardvärden för perioden
     setDateInterval()
 
+    // Hämta från API:et
     hamtaDatum()
 
 }
@@ -29,17 +32,18 @@ function setDateInterval() {
 }
 
 function hamtaDatum() {
-
-    let franDatum =document.getElementById("franDatum").value;
-    let tillDatum =document.getElementById("tillDatum").value;
+    // Hämtar poster baserat på datum
+    let franDatum = document.getElementById("franDatum").value;
+    let tillDatum = document.getElementById("tillDatum").value;
     fetch(`api/tasklist/${franDatum}/${tillDatum}`)
         .then(response => {
             if (response.ok) {
                 return response.json()
             }
 
+            // response är inte ok...
             return response.json()
-                .catch(() => null) 
+                .catch(() => null) // Är svaret inte json händer inget
                 .then(message => {
                     let fel = {
                         status: response.status,
@@ -60,16 +64,17 @@ function hamtaDatum() {
 }
 
 function hamtaSida() {
-    let sidnr=document.getElementById("sidnr").value;
+    // Hämtar poster baserat på sidnummer
+    let sidnr = document.getElementById("sidnr").value;
     fetch(`api/tasklist/${sidnr}`)
         .then(response => {
             if (response.ok) {
                 return response.json()
             }
 
-            
+            // response är inte ok...
             return response.json()
-                .catch(() => null) 
+                .catch(() => null) // Är svaret inte json händer inget
                 .then(message => {
                     let fel = {
                         status: response.status,
@@ -83,14 +88,16 @@ function hamtaSida() {
         })
         .then(data => {
             fyllLista(data)
-            let select=document.getElementById("sidnr")
-            select.innerHTML='';
-            for(let i=0;i<data.totalPages;i++) {
-                let opt=document.createElement("option")
-                opt.text=`${i+1 }`
+            // Fyll dropdown-listan för sidnummer med tillgängliga sidnummer
+            let select = document.getElementById("sidnr");
+            select.innerHTML = '';
+            for (let i = 0; i < data.pages; i++) {
+                let opt = document.createElement("option");
+                opt.text = `${i + 1}`
                 select.appendChild(opt)
             }
-            select.value=sidnr;
+            // Välj aktuellt sidnummer
+            select.value = sidnr;
         })
         .catch(error => {
             console.error(error)
@@ -98,11 +105,11 @@ function hamtaSida() {
 }
 
 function fyllLista(data) {
-   
+    // Rensa listan
     rensaLista()
 
     let target = document.getElementById("tom")
-    
+    // Loopa igenom all data
     for (let i = 0; i < data.tasks.length; i++) {
         let rad = document.createElement("ul")
         rad.className = "lista"
@@ -119,30 +126,30 @@ function fyllLista(data) {
 
 function alertDelete(id) {
     if (confirm('Vill du radera posten med id=' + id + '?')) {
-        let form=new FormData()
+        let form = new FormData()
         form.append("action", 'delete')
-        featch(`api/task/${id}`, {
-            method:"POST",
+        fetch(`api/task/${id}`, {
+            method: "POST",
             body: form
         })
             .then(response => {
-                if(response.ok) {
+                if (response.ok) {
                     return response.json()
                 } else {
                     throw response.json()
                 }
             })
             .then(data => {
-                if(data.result) {
+                if (data.result) {
                     alert('Radera lyckades')
                     window.location.reload();
                 } else {
-                    alert("redera misslyckades, kontrollera konsolen")
+                    alert("Radera misslyckades, kontrollera konsolen")
                     console.log(data)
                 }
             })
             .catch(error => {
-                alert("något gick fel vid radering, kontrollera konsolen")
+                alert("Något gick fel vid radering, kontrollera konsolen")
                 console.error(error);
             })
     }
@@ -151,32 +158,32 @@ function alertDelete(id) {
 function aktiveraAlternativ(ev) {
     try {
         if (ev.target.value === 'sida') {
-          
+            // Aktivera rätt kontroller
             document.getElementById('sidnr').disabled = false;
             document.getElementById('hamtaSida').disabled = false;
             hamtaSida()
-            
+            // Avaktivera övriga kontroller
             document.getElementById('franDatum').disabled = true;
             document.getElementById('tillDatum').disabled = true;
             document.getElementById('hamtaDatum').disabled = true;
         } else {
-            
+            // Aktivera rätt kontroller
             document.getElementById('franDatum').disabled = false;
             document.getElementById('tillDatum').disabled = false;
             document.getElementById('hamtaDatum').disabled = false;
             hamtaDatum()
-            
+            // Avaktivera övriga kontroller
             document.getElementById('sidnr').disabled = true;
             document.getElementById('hamtaSida').disabled = true;
         }
     } catch (error) {
         console.error(error)
-        
+        // Aktivera standard kontroller
         document.getElementById('franDatum').disabled = false;
         document.getElementById('tillDatum').disabled = false;
         document.getElementById('hamtaDatum').disabled = false;
         hamtaDatum()
-
+        // Avaktivera övriga kontroller
         document.getElementById('sidnr').disabled = true;
         document.getElementById('hamtaSida').disabled = true;
     }

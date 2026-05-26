@@ -1,4 +1,4 @@
--- --------------------------------------------------------
+u66750-- --------------------------------------------------------
 -- Värd:                         127.0.0.1
 -- Serverversion:                9.1.0 - MySQL Community Server - GPL
 -- Server-OS:                    Win64
@@ -14,15 +14,10 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-
--- Dumpar databasstruktur för tidapp
-CREATE DATABASE IF NOT EXISTS `tidapp` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_swedish_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `tidapp`;
-
 -- Dumpar struktur för tabell tidapp.aktiviteter
 CREATE TABLE IF NOT EXISTS `aktiviteter` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `aktivitet` varchar(50) COLLATE utf8mb4_swedish_ci NOT NULL,
+  `aktivitet` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_swedish_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `aktivitet` (`aktivitet`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
@@ -37,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `uppgifter` (
   `varaktighet` time NOT NULL DEFAULT '00:00:00',
   `beskrivning` text COLLATE utf8mb4_swedish_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_swedish_ci;
 
 -- Dataexport var bortvalt.
 

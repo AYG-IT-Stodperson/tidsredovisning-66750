@@ -30,9 +30,9 @@ function setDateInterval() {
 }
 
 function getCompilation() {
-    let franDatum =document.getElementById("franDatum").value;
-    let tillDatum =document.getElementById("tillDatum").value;
-    fetch(`api/comilation/${franDatum}/${tillDatum}`)
+    let franDatum = document.getElementById("franDatum").value;
+    let tillDatum = document.getElementById("tillDatum").value;
+    fetch(`api/compilation/${franDatum}/${tillDatum}`)
         .then(response =>{
             if(response.ok) {
                 return response.json()
